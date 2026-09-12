@@ -59,24 +59,24 @@ public class ProjectionRequestBuilder
 				return new MethodCallNode(methodDescriptor, parameters);
 
 			case NewArrayExpression newArrayExpression:
-				return new NewArrayNode(newArrayExpression.Type.GetElementType()!.AssemblyQualifiedName!,
-					newArrayExpression.Expressions.Select(BuildNode).ToList());
+				return new NewArrayNode(newArrayExpression.Type.GetElementType()!.AssemblyQualifiedName!, [..newArrayExpression.Expressions.Select(BuildNode)]);
 
 			case ListInitExpression listInitExpression:
-				return new ListInitNode(
+				return new ListInitNode
+				(
 					(NewNode) BuildNode(listInitExpression.NewExpression),
-					listInitExpression.Initializers.Select(init =>
-						new ElementInitNode(MethodDescriptor.Create(init.AddMethod), init.Arguments.Select(BuildNode).ToList())).ToList());
+					[..listInitExpression.Initializers.Select(init => new ElementInitNode(MethodDescriptor.Create(init.AddMethod), [..init.Arguments.Select(BuildNode)]))]
+				);
 
 			case MemberInitExpression memberInitExpression:
-				return new MemberInitNode(
+				return new MemberInitNode
+				(
 					(NewNode) BuildNode(memberInitExpression.NewExpression),
-					memberInitExpression.Bindings.Cast<MemberAssignment>().Select(b =>
-						new MemberAssignmentNode(MemberDescriptor.Create(b.Member), BuildNode(b.Expression))).ToList());
+					[..memberInitExpression.Bindings.Cast<MemberAssignment>().Select(b => new MemberAssignmentNode(MemberDescriptor.Create(b.Member), BuildNode(b.Expression)))]
+				);
 
 			case NewExpression newExpression:
-				return new NewNode(ConstructorDescriptor.Create(newExpression.Constructor!),
-					newExpression.Arguments.Select(BuildNode).ToList());
+				return new NewNode(ConstructorDescriptor.Create(newExpression.Constructor!), [..newExpression.Arguments.Select(BuildNode)]);
 
 			default:
 				throw new NotSupportedException($"Unsupported expression type: {expression.GetType().Name}");
