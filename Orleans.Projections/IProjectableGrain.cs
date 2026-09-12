@@ -1,6 +1,6 @@
 namespace Orleans.Projections;
 
-public interface IProjectableGrain<TState>
+public interface IProjectableGrain<TState> : IGrain
 {
     Task<ProjectionResult> ProjectAsync (ProjectionRequest request, CancellationToken cancellationToken);
 }
