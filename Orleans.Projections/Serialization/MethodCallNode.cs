@@ -2,6 +2,7 @@
 
 namespace Orleans.Projections.Serialization;
 
+[GenerateSerializer]
 public record MethodCallNode (MethodDescriptor Method, List<INode> Parameters) : INode
 {
     public Expression BuildExpression (ParameterExpression parameter)
