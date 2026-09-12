@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Orleans.Projections.Serialization;
 using Orleans.TestingHost;
 
@@ -68,6 +69,8 @@ public class ProjectionTests
             new ConstNode("literal"),
             new PropertyNode(["Name"]),
             new ConstNode(7),
+            new UnaryExpressionNode(new GenericPropertyNode<int>(["Age"]), ExpressionType.Negate),
+            new BinaryExpressionNode(new GenericPropertyNode<int>(["Age"]), new GenericConstNode<int>(5), ExpressionType.Subtract)
         ]);
 
         var result = await grain.ProjectAsync(request, CancellationToken.None);
