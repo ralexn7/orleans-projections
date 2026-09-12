@@ -50,7 +50,7 @@ public class ExpressionTests
 			Interpolated = $"{state.Name} ({state.Age})",
 
 			// Static method call
-			/*Func = int.Max(10, state.Age),
+			Func = int.Max(10, state.Age),
 
 			// Instance method call (no args, and with args)
 			Upper = state.Name.ToUpper(),
@@ -97,7 +97,7 @@ public class ExpressionTests
 			{
 				state.Name,
 				state.Age
-			}*/
+			}
 		};
 		
 		var request = ProjectionRequestBuilder.Build<PersonState, object>(projection);
