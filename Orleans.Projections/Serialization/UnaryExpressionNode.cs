@@ -12,3 +12,14 @@ public record UnaryExpressionNode (INode Operand, ExpressionType NodeType) : INo
         return Expression.MakeUnary(NodeType, operandExpression, null!);
     }
 }
+
+[GenerateSerializer]
+public record GenericUnaryExpressionNode<T> (INode Operand, ExpressionType NodeType) : INode
+{
+    public Expression BuildExpression (ParameterExpression parameter)
+    {
+        var operandExpression = Operand.BuildExpression(parameter);
+        
+        return Expression.MakeUnary(NodeType, operandExpression, typeof(T));
+    }
+}

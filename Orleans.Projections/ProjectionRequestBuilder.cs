@@ -5,10 +5,56 @@ namespace Orleans.Projections;
 
 public class ProjectionRequestBuilder
 {
-    public static ProjectionRequest Build<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
-    {
-        var members = new List<INode>();
-        
-        return new ProjectionRequest([..members]);
-    }
+	public static ProjectionRequest Build<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
+	{
+		var nodes = new List<INode>();
+
+		if (projectionExpression.Body is not NewExpression newExpression)
+		{
+			throw new ArgumentException("Projection expression must be a NewExpression.", nameof(projectionExpression));
+		}
+		
+		var arguments = newExpression.Arguments;
+
+		foreach (var arg in arguments)
+		{
+			nodes.Add(BuildNode(arg));
+		}
+		
+		return new ProjectionRequest([..nodes]);
+	}
+	
+	private static INode BuildNode (Expression expression)
+	{
+		switch (expression)
+		{
+			case MemberExpression memberExpression:
+				var path = new List<string>();
+				Expression? current = memberExpression;
+
+				while (current is MemberExpression currentMember)
+				{
+					path.Insert(0, currentMember.Member.Name);
+					current = currentMember.Expression;
+				}
+				
+				return (typeof(GenericPropertyNode<>).MakeGenericType(memberExpression.Type).GetConstructor([typeof(string[])])!.Invoke([path.ToArray()]) as INode)!;
+
+			case ConstantExpression constantExpression:
+				return (typeof(GenericConstNode<>).MakeGenericType(constantExpression.Type).GetConstructor([constantExpression.Type])!.Invoke([constantExpression.Value]) as INode)!;
+			
+			case UnaryExpression unaryExpression:
+				return (typeof(GenericUnaryExpressionNode<>).MakeGenericType(unaryExpression.Type).GetConstructor([
+					typeof(INode), typeof(ExpressionType)])!.Invoke([BuildNode(unaryExpression.Operand), unaryExpression.NodeType]) as INode)!;
+			
+			case BinaryExpression binaryExpression:
+				return new BinaryExpressionNode(BuildNode(binaryExpression.Left), BuildNode(binaryExpression.Right), binaryExpression.NodeType);
+			
+			case ConditionalExpression conditionalExpression:
+				return new ConditionalNode(BuildNode(conditionalExpression.Test), BuildNode(conditionalExpression.IfTrue), BuildNode(conditionalExpression.IfFalse));
+
+			default:
+				throw new NotSupportedException($"Unsupported expression type: {expression.GetType().Name}");
+		}
+	}
 }
