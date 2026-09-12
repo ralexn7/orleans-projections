@@ -56,7 +56,7 @@ public class ProjectionRequestBuilder
 			case MethodCallExpression methodCallExpression:
 				var methodDescriptor = MethodDescriptor.Create(methodCallExpression.Method);
 				var parameters = methodCallExpression.Arguments.Select(BuildNode).ToList();
-				return new MethodCallNode(methodDescriptor, parameters);
+				return new MethodCallNode(methodCallExpression.Object is null ? null : BuildNode(methodCallExpression.Object), methodDescriptor, parameters);
 
 			case NewArrayExpression newArrayExpression:
 				return new NewArrayNode(newArrayExpression.Type.GetElementType()!.AssemblyQualifiedName!, [..newArrayExpression.Expressions.Select(BuildNode)]);

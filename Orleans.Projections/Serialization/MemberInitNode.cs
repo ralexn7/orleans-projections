@@ -5,6 +5,7 @@ namespace Orleans.Projections.Serialization;
 [GenerateSerializer]
 public record MemberAssignmentNode (MemberDescriptor Member, INode Value);
 
+// todo: Consider adding a MemberListBindingNode and MemberMemberBindingNode for completeness, but they are less common in projections.
 [GenerateSerializer]
 public record MemberInitNode (NewNode NewExpression, List<MemberAssignmentNode> Bindings) : INode
 {
