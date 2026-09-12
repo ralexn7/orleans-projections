@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using Orleans.Projections.Serialization;
 
 namespace Orleans.Projections;
 
@@ -9,24 +8,8 @@ public class ExpressionBuilder
     {
         List<Expression> accessors = [];
         var parameter = Expression.Parameter(typeof(TState), "state");
-
-        foreach (var projectionMember in request.Nodes)
-        {
-            if (projectionMember is ConstNode constNode)
-            {
-                accessors.Add(Expression.Constant(constNode.Value, typeof(object)));
-            }
-            else if (projectionMember is PropertyNode propertyNode)
-            {
-                Expression accessor = parameter;
-                foreach (var memberPath in propertyNode.Path)
-                {
-                    accessor = Expression.PropertyOrField(accessor, memberPath);
-                }
-			    
-                accessors.Add(Expression.Convert(accessor, typeof(object)));
-            }
-        }
+        
+        accessors.AddRange(request.Nodes.Select(node => node.BuildExpression(parameter)));
 	    
         var arrayExpression = Expression.NewArrayInit(typeof(object), accessors);
 	    
