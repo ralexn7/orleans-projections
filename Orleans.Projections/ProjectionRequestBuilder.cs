@@ -52,6 +52,11 @@ public class ProjectionRequestBuilder
 			
 			case ConditionalExpression conditionalExpression:
 				return new ConditionalNode(BuildNode(conditionalExpression.Test), BuildNode(conditionalExpression.IfTrue), BuildNode(conditionalExpression.IfFalse));
+			
+			case MethodCallExpression methodCallExpression:
+				var methodDescriptor = MethodDescriptor.Create(methodCallExpression.Method);
+				var parameters = methodCallExpression.Arguments.Select(BuildNode).ToList();
+				return new MethodCallNode(methodDescriptor, parameters);
 
 			default:
 				throw new NotSupportedException($"Unsupported expression type: {expression.GetType().Name}");
