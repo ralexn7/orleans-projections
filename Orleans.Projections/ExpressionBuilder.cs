@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Orleans.Projections.Serialization;
 
 namespace Orleans.Projections;
 
@@ -9,16 +10,16 @@ public class ExpressionBuilder
         List<Expression> accessors = [];
         var parameter = Expression.Parameter(typeof(TState), "state");
 
-        foreach (var projectionMember in request.Members)
+        foreach (var projectionMember in request.Nodes)
         {
-            if (projectionMember is FromConstantMember constantMember)
+            if (projectionMember is ConstNode constNode)
             {
-                accessors.Add(Expression.Constant(constantMember.Value, typeof(object)));
+                accessors.Add(Expression.Constant(constNode.Value, typeof(object)));
             }
-            else if (projectionMember is FromMember fromMember)
+            else if (projectionMember is PropertyNode propertyNode)
             {
                 Expression accessor = parameter;
-                foreach (var memberPath in fromMember.Paths)
+                foreach (var memberPath in propertyNode.Path)
                 {
                     accessor = Expression.PropertyOrField(accessor, memberPath);
                 }

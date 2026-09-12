@@ -1,4 +1,4 @@
-using Orleans.Projections;
+using Orleans.Projections.Serialization;
 using Orleans.TestingHost;
 
 namespace Orleans.Projections.Test;
@@ -35,8 +35,8 @@ public class ProjectionTests
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
         var request = new ProjectionRequest([
-            new FromMember(["Name"]),
-            new FromMember(["Age"]),
+            new PropertyNode(["Name"]),
+            new PropertyNode(["Age"]),
         ]);
 
         var result = await grain.ProjectAsync(request, CancellationToken.None);
@@ -50,8 +50,8 @@ public class ProjectionTests
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
         var request = new ProjectionRequest([
-            new FromMember(["Address", "City"]),
-            new FromMember(["Address", "Country"]),
+            new PropertyNode(["Address", "City"]),
+            new PropertyNode(["Address", "Country"]),
         ]);
 
         var result = await grain.ProjectAsync(request, CancellationToken.None);
@@ -65,9 +65,9 @@ public class ProjectionTests
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
         var request = new ProjectionRequest([
-            new FromConstantMember("literal"),
-            new FromMember(["Name"]),
-            new FromConstantMember(7),
+            new ConstNode("literal"),
+            new PropertyNode(["Name"]),
+            new ConstNode(7),
         ]);
 
         var result = await grain.ProjectAsync(request, CancellationToken.None);

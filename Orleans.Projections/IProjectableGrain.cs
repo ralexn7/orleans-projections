@@ -1,3 +1,5 @@
+using Orleans.Projections.Serialization;
+
 namespace Orleans.Projections;
 
 public interface IProjectableGrain<TState> : IGrain
@@ -6,16 +8,7 @@ public interface IProjectableGrain<TState> : IGrain
 }
 
 [GenerateSerializer]
-public record ProjectionRequest (ProjectionMember[] Members);
-
-[GenerateSerializer]
-public abstract record ProjectionMember;
-
-[GenerateSerializer]
-public record FromMember (string[] Paths) : ProjectionMember;
-
-[GenerateSerializer]
-public record FromConstantMember (object? Value) : ProjectionMember;
+public record ProjectionRequest (INode[] Nodes);
 
 [GenerateSerializer]
 public record ProjectionResult (object?[] Values);
