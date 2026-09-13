@@ -8,13 +8,27 @@ public class ProjectionRequestBuilder
 	public static ProjectionRequest<TState> Build<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
 	{
 		var nodes = new List<INode>();
-
-		if (projectionExpression.Body is not NewExpression newExpression)
-		{
-			throw new ArgumentException("Projection expression must be a NewExpression.", nameof(projectionExpression));
-		}
 		
-		var arguments = newExpression.Arguments;
+		IReadOnlyCollection<Expression> arguments;
+		
+		if (projectionExpression.Body is NewExpression newExpression)
+		{
+			arguments = newExpression.Arguments;
+		}
+		else if (projectionExpression.Body is MemberInitExpression memberInitExpression)
+		{
+			// todo: consider adding support for MemberListBinding and MemberMemberBinding
+			if (memberInitExpression.Bindings.Any(b => b.BindingType != MemberBindingType.Assignment))
+			{
+				throw new NotSupportedException($"Unsupported member binding type: {memberInitExpression.Bindings.First().BindingType}");
+			}
+			
+			arguments = [..memberInitExpression.Bindings.Select(b => ((MemberAssignment)b).Expression)];
+		}
+		else
+		{
+			throw new ArgumentException("Projection expression body must be either a NewExpression or a MemberInitExpression.", nameof(projectionExpression));
+		}
 
 		foreach (var arg in arguments)
 		{

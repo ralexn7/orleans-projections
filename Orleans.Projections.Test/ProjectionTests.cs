@@ -77,4 +77,55 @@ public class ProjectionTests
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "literal", "Ada", 7 }));
     }
+    
+    [Test]
+    public async Task Projects_AnonymousType_Entire_Flow ()
+    {
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        
+        var data = await grain.Project(state => new
+        {
+            state.Name,
+            state.Age,
+            Location = $"{state.Address.City}, {state.Address.Country}",
+            AgePlusFive = state.Age + 5,
+            IsAdult = state.Age >= 18
+        });
+        
+        Assert.That(data.Name, Is.EqualTo("Ada"));
+        Assert.That(data.Age, Is.EqualTo(42));
+        Assert.That(data.Location, Is.EqualTo("London, UK"));
+        Assert.That(data.AgePlusFive, Is.EqualTo(47));
+        Assert.That(data.IsAdult, Is.EqualTo(true));
+    }
+
+    public class PersonData
+    {
+        public string? Name { get; set; }
+        public int Age { get; set; }
+        public string? Location { get; set; }
+        public int AgePlusFive { get; set; }
+        public bool IsAdult { get; set; }
+    }
+    
+    [Test]
+    public async Task Projects_ExplicitType_Entire_Flow ()
+    {
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        
+        var data = await grain.Project(state => new PersonData
+        {
+            Name = state.Name,
+            Age = state.Age,
+            Location = $"{state.Address.City}, {state.Address.Country}",
+            AgePlusFive = state.Age + 5,
+            IsAdult = state.Age >= 18
+        });
+        
+        Assert.That(data.Name, Is.EqualTo("Ada"));
+        Assert.That(data.Age, Is.EqualTo(42));
+        Assert.That(data.Location, Is.EqualTo("London, UK"));
+        Assert.That(data.AgePlusFive, Is.EqualTo(47));
+        Assert.That(data.IsAdult, Is.EqualTo(true));
+    }
 }
