@@ -12,10 +12,10 @@ public record ConstNode (int ParameterIndex) : INode
 }
 
 [GenerateSerializer]
-public record GenericConstNode<T> (T? Value) : INode
+public record GenericConstNode<T> (int ParameterIndex) : INode
 {
 	public Expression BuildExpression (BuildContext context)
 	{
-		return Expression.Constant(Value, typeof(T));
+		return Expression.Constant(context.BuildingParameters[ParameterIndex], typeof(T));
 	}
 }

@@ -64,7 +64,7 @@ public class ProjectionPlanFactory
 
 			case ConstantExpression constantExpression:
 				planParameters.Add(constantExpression.Value);
-				return (typeof(GenericConstNode<>).MakeGenericType(constantExpression.Type).GetConstructor([constantExpression.Type])!.Invoke([planParameters.Count - 1]) as INode)!;
+				return (typeof(GenericConstNode<>).MakeGenericType(constantExpression.Type).GetConstructor([typeof(int)])!.Invoke([planParameters.Count - 1]) as INode)!;
 			
 			case UnaryExpression unaryExpression:
 				return (typeof(GenericUnaryExpressionNode<>).MakeGenericType(unaryExpression.Type).GetConstructor([

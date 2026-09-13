@@ -103,7 +103,7 @@ public class ExpressionTests
 		
 		var request = ProjectionPlanFactory.ConvertExpressionToPlan(projection);
 		
-		Assert.That(request.Nodes.Count, Is.EqualTo(6));
+		Assert.That(request.Item1.Nodes.Count, Is.EqualTo(6));
 	}
 	
 	[Test]
@@ -136,7 +136,7 @@ public class ExpressionTests
 		
 		var request = ProjectionPlanFactory.ConvertExpressionToPlan(projection);
 
-		Expression<Func<PersonState, object?[]>> expression = request.BuildExpression();
+		Expression<Func<PersonState, object?[]>> expression = request.Item1.BuildExpression(request.Item2);
 		
 		var res = expression.Compile()(state);
 		
