@@ -4,5 +4,5 @@ namespace Orleans.Projections.Serialization;
 
 public interface INode
 {
-	Expression BuildExpression (ParameterExpression parameter);
+	Expression BuildExpression (BuildContext context);
 }

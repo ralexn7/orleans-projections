@@ -95,7 +95,11 @@ public class ProjectionRequestBuilder
 				return (typeof(DefaultNode<>).MakeGenericType(defaultExpression.Type).GetConstructor([])!.Invoke([]) as INode)!;
 			
 			case ParameterExpression parameterExpression:
-				return (typeof(ParameterNode<>).MakeGenericType(parameterExpression.Type).GetConstructor([typeof(string)])!.Invoke([parameterExpression.Name]) as INode)!;
+				return (typeof(ParameterNode<>).MakeGenericType(parameterExpression.Type).GetConstructor([typeof(string), typeof(string)])!.Invoke(["0", parameterExpression.Name]) as INode)!;
+			
+			case LambdaExpression lambdaExpression:
+				return new LambdaExpressionNode(BuildNode(lambdaExpression.Body),
+					lambdaExpression.Parameters.Select((p, i) => typeof(ParameterNode<>).MakeGenericType(p.Type).GetConstructor([typeof(string), typeof(string)])!.Invoke([i.ToString(), p.Name]) as IParameterNode).ToArray());
 
 			default:
 				throw new NotSupportedException($"Unsupported expression type: {expression.GetType().Name}");

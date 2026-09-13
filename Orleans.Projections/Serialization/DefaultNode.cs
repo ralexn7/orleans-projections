@@ -6,7 +6,7 @@ namespace Orleans.Projections.Serialization;
 [GenerateSerializer]
 public record DefaultNode<T> : INode
 {
-    public Expression BuildExpression (ParameterExpression parameter)
+    public Expression BuildExpression (BuildContext context)
     {
         return Expression.Default(typeof(T));
     }

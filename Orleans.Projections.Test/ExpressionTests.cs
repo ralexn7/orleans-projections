@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace Orleans.Projections.Test;
@@ -118,12 +119,13 @@ public class ExpressionTests
 		{
 			Upper = state.Name.ToUpper(),
 			Initial = state.Name.Substring(0, 1),
-			Location = $"{state.Address.City}, {state.Address.Country}"
+			Location = $"{state.Address.City}, {state.Address.Country}",
+			ALetters = state.Name.Where(c => c == 'A').ToArray()
 		};
 		
 		var request = ProjectionRequestBuilder.Build(projection);
 		
-		Assert.That(request.Nodes.Count, Is.EqualTo(3));
+		Assert.That(request.Nodes.Count, Is.EqualTo(4));
 
 		Expression<Func<PersonState, object?[]>> expression = ExpressionBuilder.Build<PersonState>(request);
 		
@@ -132,6 +134,48 @@ public class ExpressionTests
 		Assert.That(res[0], Is.EqualTo("ALICE"));
 		Assert.That(res[1], Is.EqualTo("A"));
 		Assert.That(res[2], Is.EqualTo("New York, USA"));
+		Assert.That(res[0], Is.EqualTo(new[] { 'A' }));
+	}
+
+	[Test]
+	public void Lambda_InspectShape ()
+	{
+		// A projection containing a nested lambda: Enumerable.Where/Select over the string's chars.
+		// The C# compiler emits each LINQ operator as a MethodCallExpression whose delegate argument
+		// is a UnaryExpression(Quote) wrapping a LambdaExpression — the shape a future LambdaNode
+		// (and a parameter-binding scope) would have to round-trip.
+		Expression<Func<PersonState, object>> projection = state => new
+		{
+			Initials = state.Name.Where(c => c != ' ').Select(c => char.ToUpperInvariant(c))
+		};
+
+		// Pull the interesting sub-expressions into locals so they show up in the debugger's Locals pane.
+		var newExpression = (NewExpression) projection.Body;
+		var selectCall = (MethodCallExpression) newExpression.Arguments[0]; // Enumerable.Select(...)
+		var whereCall = (MethodCallExpression) selectCall.Arguments[0];     // Enumerable.Where(...)
+
+		// The delegate argument is wrapped in a Quote unary node; its operand is the actual lambda.
+		var quotedSelector = (UnaryExpression) selectCall.Arguments[1];     // NodeType == Quote
+		var selectorLambda = (LambdaExpression) quotedSelector.Operand;     // c => char.ToUpperInvariant(c)
+		var selectorParam = selectorLambda.Parameters[0];                  // ParameterExpression 'c'
+		var selectorBody = selectorLambda.Body;                            // MethodCallExpression: char.ToUpperInvariant(c)
+
+		var quotedPredicate = (UnaryExpression) whereCall.Arguments[1];     // NodeType == Quote
+		var predicateLambda = (LambdaExpression) quotedPredicate.Operand;   // c => c != ' '
+
+		// Put a breakpoint on the line below and inspect the locals above.
+		Assert.That(quotedSelector.NodeType, Is.EqualTo(ExpressionType.Quote));
+		Assert.That(quotedPredicate.NodeType, Is.EqualTo(ExpressionType.Quote));
+		Assert.That(selectorLambda.Parameters.Count, Is.EqualTo(1));
+		Assert.That(selectorParam.Name, Is.EqualTo("c"));
+		Assert.That(whereCall.Method.Name, Is.EqualTo("Where"));
+		Assert.That(selectCall.Method.Name, Is.EqualTo("Select"));
+
+		// Note: the inner lambda parameter 'c' is distinct from the root 'state' parameter.
+		// ReferenceEquals(selectorParam, predicateLambda.Parameters[0]) is false — each lambda
+		// declares its own parameter instance, which is exactly why a shared parameter-binding
+		// scope is needed before this tree can be rebuilt on the grain side.
+		Assert.That(ReferenceEquals(selectorParam, predicateLambda.Parameters[0]), Is.False);
 	}
 }
 

@@ -5,9 +5,9 @@ namespace Orleans.Projections.Serialization;
 [GenerateSerializer]
 public record UnaryExpressionNode (INode Operand, ExpressionType NodeType) : INode
 {
-    public Expression BuildExpression (ParameterExpression parameter)
+    public Expression BuildExpression (BuildContext context)
     {
-        var operandExpression = Operand.BuildExpression(parameter);
+        var operandExpression = Operand.BuildExpression(context);
         
         return Expression.MakeUnary(NodeType, operandExpression, null!);
     }
@@ -16,9 +16,9 @@ public record UnaryExpressionNode (INode Operand, ExpressionType NodeType) : INo
 [GenerateSerializer]
 public record GenericUnaryExpressionNode<T> (INode Operand, ExpressionType NodeType) : INode
 {
-    public Expression BuildExpression (ParameterExpression parameter)
+    public Expression BuildExpression (BuildContext context)
     {
-        var operandExpression = Operand.BuildExpression(parameter);
+        var operandExpression = Operand.BuildExpression(context);
         
         return Expression.MakeUnary(NodeType, operandExpression, typeof(T));
     }

@@ -8,12 +8,12 @@ public record ElementInitNode (MethodDescriptor AddMethod, List<INode> Arguments
 [GenerateSerializer]
 public record ListInitNode (NewNode NewExpression, List<ElementInitNode> Initializers) : INode
 {
-    public Expression BuildExpression (ParameterExpression parameter)
+    public Expression BuildExpression (BuildContext context)
     {
-        var newExpression = (NewExpression) NewExpression.BuildExpression(parameter);
+        var newExpression = (NewExpression) NewExpression.BuildExpression(context);
 
         var initializers = Initializers.Select(init =>
-            Expression.ElementInit(init.AddMethod.Resolve(), init.Arguments.Select(a => a.BuildExpression(parameter))));
+            Expression.ElementInit(init.AddMethod.Resolve(), init.Arguments.Select(a => a.BuildExpression(context))));
 
         return Expression.ListInit(newExpression, initializers);
     }

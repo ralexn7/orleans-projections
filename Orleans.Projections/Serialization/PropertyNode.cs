@@ -5,9 +5,9 @@ namespace Orleans.Projections.Serialization;
 [GenerateSerializer]
 public record PropertyNode (string[] Path) : INode
 {
-	public Expression BuildExpression (ParameterExpression parameter)
+	public Expression BuildExpression (BuildContext context)
 	{
-		Expression accessor = parameter;
+		Expression accessor = context.Root;
 		foreach (var memberPath in Path)
 		{
 			accessor = Expression.PropertyOrField(accessor, memberPath);
@@ -20,9 +20,9 @@ public record PropertyNode (string[] Path) : INode
 [GenerateSerializer]
 public record GenericPropertyNode<T> (string[] Path) : INode
 {
-	public Expression BuildExpression (ParameterExpression parameter)
+	public Expression BuildExpression (BuildContext context)
 	{
-		Expression accessor = parameter;
+		Expression accessor = context.Root;
 		foreach (var memberPath in Path)
 		{
 			accessor = Expression.PropertyOrField(accessor, memberPath);
