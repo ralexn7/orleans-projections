@@ -35,7 +35,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
-        var request = new ProjectionRequest([
+        var request = new ProjectionRequest<PersonState>([
             new PropertyNode(["Name"]),
             new PropertyNode(["Age"]),
         ]);
@@ -50,7 +50,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
-        var request = new ProjectionRequest([
+        var request = new ProjectionRequest<PersonState>([
             new PropertyNode(["Address", "City"]),
             new PropertyNode(["Address", "Country"]),
         ]);
@@ -65,7 +65,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
-        var request = new ProjectionRequest([
+        var request = new ProjectionRequest<PersonState>([
             new ConstNode("literal"),
             new PropertyNode(["Name"]),
             new ConstNode(7),
