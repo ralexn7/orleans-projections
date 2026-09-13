@@ -8,9 +8,11 @@ public class ProjectionPlanFactory
 	public static (ProjectionPlan<TState>, List<object?>) ConvertExpressionToPlan<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
 	{
 		var nodes = new List<INode>();
+		List<object?> planParameters = [];
 		
-		IReadOnlyCollection<Expression> arguments;
+		IReadOnlyCollection<Expression> arguments = [];
 		
+		// if it is complex projection, we need to extract the arguments from the NewExpression or MemberInitExpression
 		if (projectionExpression.Body is NewExpression newExpression)
 		{
 			arguments = newExpression.Arguments;
@@ -25,22 +27,14 @@ public class ProjectionPlanFactory
 			
 			arguments = [..memberInitExpression.Bindings.Select(b => ((MemberAssignment)b).Expression)];
 		}
+
+		if (arguments is { Count: > 0 })
+		{
+			nodes.AddRange(arguments.Select(arg => BuildNode(arg, planParameters)));
+		}
 		else
 		{
-			throw new ArgumentException("Projection expression body must be either a NewExpression or a MemberInitExpression.", nameof(projectionExpression));
-		}
-
-		List<object?> planParameters = [];
-		foreach (var arg in arguments)
-		{
-			// Ensure that the argument is not a root parameter expression. Cause we do not want to expose the internal grain state as is
-			// todo: Maybe it is not worth it. Returning raw state (readonly!) may be useful for some scenarios as Grain Dashboards
-			if (arg is ParameterExpression)
-			{
-				throw new ArgumentException("Projection expression cannot contain root parameter expressions.", nameof(projectionExpression));
-			}
-			
-			nodes.Add(BuildNode(arg, planParameters));
+			nodes.Add(BuildNode(projectionExpression.Body, planParameters));
 		}
 		
 		return (new ProjectionPlan<TState>([..nodes]), planParameters);

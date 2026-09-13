@@ -128,4 +128,25 @@ public class ProjectionTests
         Assert.That(data.AgePlusFive, Is.EqualTo(47));
         Assert.That(data.IsAdult, Is.EqualTo(true));
     }
+    
+    [Test]
+    public async Task Projects_Scalar_Entire_Flow ()
+    {
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        
+        var data = await grain.GetProjection(state => state.Age);
+        
+        Assert.That(data, Is.EqualTo(42));
+    }
+    
+        
+    [Test]
+    public async Task Projects_ScalarLambda_Entire_Flow ()
+    {
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        
+        var data = await grain.GetProjection(state => state.Age + 20);
+        
+        Assert.That(data, Is.EqualTo(62));
+    }
 }

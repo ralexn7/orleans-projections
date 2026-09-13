@@ -5,6 +5,7 @@ namespace Orleans.Projections;
 [GenerateSerializer]
 public record Projection (object?[] Values)
 {
+	// todo: think about nullability
 	public T ConvertToInstance<T> ()
 	{
 		return (T)ConvertToInstance(typeof(T), Values);
@@ -13,6 +14,19 @@ public record Projection (object?[] Values)
 	private static object ConvertToInstance (Type type, object?[] values)
 	{
 		// todo: add reflection cache to avoid repeated reflection calls for the same type
+		
+		// first check scalar types and string
+		if (type.IsPrimitive || type == typeof(string) || type == typeof(decimal))
+		{
+			if (values.Length != 1)
+			{
+				throw new ArgumentException($"Expected 1 value, got {values.Length} for {type.Name}.");
+			}
+
+			return MapValue(type, values[0])!;
+		}
+		
+		// otherwise try to build complex instance
 		
 		// first try to find a constructor that matches the number of values and their types
 		var ctors = type
