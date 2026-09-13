@@ -5,7 +5,7 @@ namespace Orleans.Projections;
 
 public class ProjectionPlanFactory
 {
-	public static ProjectionPlan<TState> ConvertExpressionToPlan<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
+	public static (ProjectionPlan<TState>, List<object?>) ConvertExpressionToPlan<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
 	{
 		var nodes = new List<INode>();
 		
@@ -43,7 +43,7 @@ public class ProjectionPlanFactory
 			nodes.Add(BuildNode(arg, planParameters));
 		}
 		
-		return new ProjectionPlan<TState>([..nodes], [..planParameters]);
+		return (new ProjectionPlan<TState>([..nodes]), planParameters);
 	}
 	
 	private static INode BuildNode (Expression expression, List<object?> planParameters)

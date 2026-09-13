@@ -30,9 +30,9 @@ public class PersonGrain : Grain, IPersonGrain
         return Task.CompletedTask;
     }
 
-    public async Task<Projection> GetProjection (ProjectionPlan<PersonState> plan, CancellationToken cancellationToken)
+    public async Task<Projection> GetProjection (ProjectionPlan<PersonState> plan, List<object?> parameters, CancellationToken cancellationToken)
     {
-        var projector = plan.BuildExpression().Compile();
+        var projector = plan.BuildExpression(parameters).Compile();
         
         return new Projection(projector(_state));
     }

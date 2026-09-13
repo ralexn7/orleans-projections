@@ -38,9 +38,9 @@ public class ProjectionTests
         var request = new ProjectionPlan<PersonState>([
             new PropertyNode(["Name"]),
             new PropertyNode(["Age"]),
-        ], []);
+        ]);
 
-        var result = await grain.GetProjection(request, CancellationToken.None);
+        var result = await grain.GetProjection(request, [], CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "Ada", 42 }));
     }
@@ -53,9 +53,9 @@ public class ProjectionTests
         var request = new ProjectionPlan<PersonState>([
             new PropertyNode(["Address", "City"]),
             new PropertyNode(["Address", "Country"]),
-        ], []);
+        ]);
 
-        var result = await grain.GetProjection(request, CancellationToken.None);
+        var result = await grain.GetProjection(request, [], CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "London", "UK" }));
     }
@@ -71,9 +71,9 @@ public class ProjectionTests
             new ConstNode(1),
             new UnaryExpressionNode(new GenericPropertyNode<int>(["Age"]), ExpressionType.Negate),
             new BinaryExpressionNode(new GenericPropertyNode<int>(["Age"]), new GenericConstNode<int>(2), ExpressionType.Subtract)
-        ], ["literal", 7, 5]);
+        ]);
 
-        var result = await grain.GetProjection(request, CancellationToken.None);
+        var result = await grain.GetProjection(request, ["literal", 7, 5], CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "literal", "Ada", 7 }));
     }

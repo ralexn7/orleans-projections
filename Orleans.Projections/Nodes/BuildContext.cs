@@ -2,13 +2,13 @@
 
 namespace Orleans.Projections.Nodes;
 
-public class BuildContext (ParameterExpression root, object?[] buildingParameters)
+public class BuildContext (ParameterExpression root, IReadOnlyList<object?> buildingParameters)
 {
 	public LambdaScope? CurrentLambda { get; private set; }
 	
 	public ParameterExpression Root => root;
 
-	public object?[] BuildingParameters => buildingParameters;
+	public IReadOnlyList<object?> BuildingParameters => buildingParameters;
 	
 	public IDisposable DeclareLambdaScope (LambdaScopeParameter[] parameters)
 	{
