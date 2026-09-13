@@ -40,7 +40,7 @@ public class ProjectionTests
             new PropertyNode(["Age"]),
         ]);
 
-        var result = await grain.GetProjection(request, [], CancellationToken.None);
+        var result = await grain.Get(request, [], CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "Ada", 42 }));
     }
@@ -55,7 +55,7 @@ public class ProjectionTests
             new PropertyNode(["Address", "Country"]),
         ]);
 
-        var result = await grain.GetProjection(request, [], CancellationToken.None);
+        var result = await grain.Get(request, [], CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "London", "UK" }));
     }
@@ -73,7 +73,7 @@ public class ProjectionTests
             new BinaryExpressionNode(new GenericPropertyNode<int>(["Age"]), new GenericConstNode<int>(2), ExpressionType.Subtract)
         ]);
 
-        var result = await grain.GetProjection(request, ["literal", 7, 5], CancellationToken.None);
+        var result = await grain.Get(request, ["literal", 7, 5], CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "literal", "Ada", 7 }));
     }
@@ -83,7 +83,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
         
-        var data = await grain.GetProjection(state => new
+        var data = await grain.Get(state => new
         {
             state.Name,
             state.Age,
@@ -113,7 +113,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
         
-        var data = await grain.GetProjection(state => new PersonData
+        var data = await grain.Get(state => new PersonData
         {
             Name = state.Name,
             Age = state.Age,
@@ -134,7 +134,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
         
-        var data = await grain.GetProjection(state => state.Age);
+        var data = await grain.Get(state => state.Age);
         
         Assert.That(data, Is.EqualTo(42));
     }
@@ -145,7 +145,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
         
-        var data = await grain.GetProjection(state => state.Age + 20);
+        var data = await grain.Get(state => state.Age + 20);
         
         Assert.That(data, Is.EqualTo(62));
     }
