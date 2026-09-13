@@ -85,11 +85,11 @@ public class ProjectionRequestBuilder
 				return new MemberInitNode
 				(
 					(NewNode) BuildNode(memberInitExpression.NewExpression),
-					[..memberInitExpression.Bindings.Cast<MemberAssignment>().Select(b => new MemberAssignmentNode(MemberDescriptor.Create(b.Member), BuildNode(b.Expression)))]
+					[..memberInitExpression.Bindings.Cast<MemberAssignment>().Select(b => new MemberAssignmentNode(BuildNode(b.Expression)))]
 				);
 
 			case NewExpression newExpression:
-				return new NewNode(ConstructorDescriptor.Create(newExpression.Constructor!), [..newExpression.Arguments.Select(BuildNode)]);
+				return new NewNode([..newExpression.Arguments.Select(BuildNode)]);
 			
 			case DefaultExpression defaultExpression:
 				return (typeof(DefaultNode<>).MakeGenericType(defaultExpression.Type).GetConstructor([])!.Invoke([]) as INode)!;

@@ -2,6 +2,7 @@
 
 namespace Orleans.Projections.Serialization;
 
+[GenerateSerializer]
 public record LambdaExpressionNode (INode Body, IParameterNode[] Parameters) : INode
 {
 	public Expression BuildExpression (BuildContext context)

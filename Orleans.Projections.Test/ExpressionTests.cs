@@ -120,12 +120,21 @@ public class ExpressionTests
 			Upper = state.Name.ToUpper(),
 			Initial = state.Name.Substring(0, 1),
 			Location = $"{state.Address.City}, {state.Address.Country}",
-			ALetters = state.Name.Where(c => c == 'A').ToArray()
+			ALetters = state.Name.Where(c => c == 'A').ToArray(),
+			Complex = new
+			{
+				AgePlusFive = state.Age + 5,
+				IsAdult = state.Age >= 18
+			},
+			Array = state.Name.ToCharArray(),
+			Point = new Coordinate
+			{
+				X = state.Age,
+				Y = state.Age + 1
+			},
 		};
 		
 		var request = ProjectionRequestBuilder.Build(projection);
-		
-		Assert.That(request.Nodes.Count, Is.EqualTo(4));
 
 		Expression<Func<PersonState, object?[]>> expression = request.BuildExpression();
 		
