@@ -15,8 +15,8 @@ public record Projection (object?[] Values)
 	{
 		// todo: add reflection cache to avoid repeated reflection calls for the same type
 		
-		// first check scalar types and string
-		if (type.IsPrimitive || type == typeof(string) || type == typeof(decimal))
+		// first check if target type is primitive, enum, string or decimal, in which case we expect a single value
+		if (type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal))
 		{
 			if (values.Length != 1)
 			{
@@ -104,13 +104,23 @@ public record Projection (object?[] Values)
 		{
 			return null;
 		}
-
-		// object[] can mean either an array of values or a single nested complex object
+		
+		// if value is just object, it is scalar value, so we can just return it
 		if (value is not object?[] values)
 		{
+			// if it is enum we receive is underlying integer value, so we need to convert it back to enum
+			// todo: Not sure if this check should be here or in ConvertToInstance
+			if (targetType.IsEnum)
+			{
+				var underlyingType = Enum.GetUnderlyingType(targetType);
+				var convertedValue = Convert.ChangeType(value, underlyingType);
+				return Enum.ToObject(targetType, convertedValue);
+			}
+			
 			return value;
 		}
 
+		// object[] can mean either an array of values or a single nested complex object
 		if (targetType.IsArray)
 		{
 			var elementType = targetType.GetElementType()

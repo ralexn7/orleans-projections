@@ -28,6 +28,7 @@ public class ProjectionPlanFactory
 			arguments = [..memberInitExpression.Bindings.Select(b => ((MemberAssignment)b).Expression)];
 		}
 
+		// for scalar projection, we just need to build the node for the body of the expression
 		if (arguments is { Count: > 0 })
 		{
 			nodes.AddRange(arguments.Select(arg => BuildNode(arg, planParameters)));
@@ -58,7 +59,10 @@ public class ProjectionPlanFactory
 				return (typeof(GenericPropertyNode<>).MakeGenericType(memberExpression.Type).GetConstructor([typeof(string[])])!.Invoke([path.ToArray()]) as INode)!;
 
 			case ConstantExpression constantExpression:
-				planParameters.Add(constantExpression.Value);
+				// if it is enum, we need to persist its integer value instead of the enum type itself, because the enum type may not be available on the server.
+				planParameters.Add(constantExpression.Type.IsEnum
+					? Convert.ChangeType(constantExpression.Value, Enum.GetUnderlyingType(constantExpression.Type))
+					: constantExpression.Value);
 				return (typeof(GenericConstNode<>).MakeGenericType(constantExpression.Type).GetConstructor([typeof(int)])!.Invoke([planParameters.Count - 1]) as INode)!;
 			
 			case UnaryExpression unaryExpression:
