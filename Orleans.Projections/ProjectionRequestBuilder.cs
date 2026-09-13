@@ -5,7 +5,7 @@ namespace Orleans.Projections;
 
 public class ProjectionRequestBuilder
 {
-	public static ProjectionRequest Build<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
+	public static ProjectionRequest<TState> Build<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
 	{
 		var nodes = new List<INode>();
 
@@ -28,7 +28,7 @@ public class ProjectionRequestBuilder
 			nodes.Add(BuildNode(arg));
 		}
 		
-		return new ProjectionRequest([..nodes]);
+		return new ProjectionRequest<TState>([..nodes]);
 	}
 	
 	private static INode BuildNode (Expression expression)

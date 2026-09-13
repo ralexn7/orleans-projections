@@ -1,5 +1,3 @@
-using Orleans.Projections;
-
 namespace Orleans.Projections.Test;
 
 // --- Sample state the grain projects over ---
@@ -32,9 +30,9 @@ public class PersonGrain : Grain, IPersonGrain
         return Task.CompletedTask;
     }
 
-    public Task<ProjectionResult> ProjectAsync (ProjectionRequest request, CancellationToken cancellationToken)
+    public Task<ProjectionResult> ProjectAsync (ProjectionRequest<PersonState> request, CancellationToken cancellationToken)
     {
-        var projector = ExpressionBuilder.Build<PersonState>(request).Compile();
+        var projector = request.BuildExpression().Compile();
         return Task.FromResult(new ProjectionResult(projector(_state)));
     }
 }
