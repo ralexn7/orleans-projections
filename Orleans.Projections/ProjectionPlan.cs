@@ -7,7 +7,7 @@ namespace Orleans.Projections;
 [GenerateSerializer]
 public record ProjectionPlan<TState> (INode[] Nodes)
 {
-	// Reflection cache to avoid recompiling the same expression multiple times. Since all constants are independent of projection shape, the key is the ProjectionPlan instance itself.
+	// Reflection cache to avoid recompiling the same expression multiple times. Since all constants are independent of the projection shape, the key is the ProjectionPlan instance itself.
 	// Let's keep it unbounded for now; I do not expect a large number of different projection plans to be used in a single grain.
 	// Note: usually specific state class is used in the single grain, so maybe it is possible to use the usual dictionary here instead of the concurrent one. But let's keep it concurrent for now, just in case.
 	private static readonly ConcurrentDictionary<ProjectionPlan<TState>, Func<TState, object?[], object?[]>> ExpressionCache = new();

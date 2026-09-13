@@ -12,6 +12,8 @@ public record Projection (object?[] Values)
 	
 	private static object ConvertToInstance (Type type, object?[] values)
 	{
+		// todo: add reflection cache to avoid repeated reflection calls for the same type
+		
 		// first try to find a constructor that matches the number of values and their types
 		var ctors = type
 			.GetConstructors(BindingFlags.Instance | BindingFlags.Public)

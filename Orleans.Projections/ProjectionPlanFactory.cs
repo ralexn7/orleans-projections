@@ -60,6 +60,7 @@ public class ProjectionPlanFactory
 					current = currentMember.Expression;
 				}
 				
+				// todo: consider not using reflection here and send type as a string instead.
 				return (typeof(GenericPropertyNode<>).MakeGenericType(memberExpression.Type).GetConstructor([typeof(string[])])!.Invoke([path.ToArray()]) as INode)!;
 
 			case ConstantExpression constantExpression:
