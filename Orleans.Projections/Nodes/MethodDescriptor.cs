@@ -52,4 +52,27 @@ public record MethodDescriptor (string DeclaringType, string Name, string[] Para
 
 	private static string SimpleName(string assemblyQualified) =>
 		Type.GetType(assemblyQualified, false)?.Name ?? assemblyQualified;
+
+	public virtual bool Equals (MethodDescriptor? other) =>
+		other is not null
+		&& DeclaringType == other.DeclaringType
+		&& Name == other.Name
+		&& ParameterTypes.SequenceEqual(other.ParameterTypes)
+		&& GenericArguments.SequenceEqual(other.GenericArguments);
+
+	public override int GetHashCode ()
+	{
+		var hash = new HashCode();
+		hash.Add(DeclaringType);
+		hash.Add(Name);
+		foreach (var parameterType in ParameterTypes)
+		{
+			hash.Add(parameterType);
+		}
+		foreach (var genericArgument in GenericArguments)
+		{
+			hash.Add(genericArgument);
+		}
+		return hash.ToHashCode();
+	}
 }

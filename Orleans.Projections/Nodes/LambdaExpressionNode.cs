@@ -15,4 +15,18 @@ public record LambdaExpressionNode (INode Body, IParameterNode[] Parameters) : I
 		
 		return Expression.Lambda(Body.BuildExpression(context), rootLambdaParams);
 	}
+
+	public virtual bool Equals (LambdaExpressionNode? other) =>
+		other is not null && Body.Equals(other.Body) && Parameters.SequenceEqual(other.Parameters);
+
+	public override int GetHashCode ()
+	{
+		var hash = new HashCode();
+		hash.Add(Body);
+		foreach (var parameter in Parameters)
+		{
+			hash.Add(parameter);
+		}
+		return hash.ToHashCode();
+	}
 }

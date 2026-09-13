@@ -15,6 +15,19 @@ public record PropertyNode (string[] Path) : INode
 
 		return accessor;
 	}
+
+	public virtual bool Equals (PropertyNode? other) =>
+		other is not null && Path.SequenceEqual(other.Path);
+
+	public override int GetHashCode ()
+	{
+		var hash = new HashCode();
+		foreach (var segment in Path)
+		{
+			hash.Add(segment);
+		}
+		return hash.ToHashCode();
+	}
 }
 
 [GenerateSerializer]
@@ -29,5 +42,19 @@ public record GenericPropertyNode<T> (string[] Path) : INode
 		}
 
 		return Expression.Convert(accessor, typeof(T));
+	}
+
+	public virtual bool Equals (GenericPropertyNode<T>? other) =>
+		other is not null && Path.SequenceEqual(other.Path);
+
+	public override int GetHashCode ()
+	{
+		var hash = new HashCode();
+		hash.Add(typeof(T));
+		foreach (var segment in Path)
+		{
+			hash.Add(segment);
+		}
+		return hash.ToHashCode();
 	}
 }

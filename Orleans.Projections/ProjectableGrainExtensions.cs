@@ -4,7 +4,7 @@ namespace Orleans.Projections;
 
 public static class ProjectableGrainExtensions
 {
-	public static async Task<TProjection> Project<TState, TProjection> (this IProjectableGrain<TState> grain, Expression<Func<TState, TProjection>> projection, CancellationToken cancellationToken = default)
+	public static async Task<TProjection> GetProjection<TState, TProjection> (this IProjectableGrain<TState> grain, Expression<Func<TState, TProjection>> projection, CancellationToken cancellationToken = default)
 	{
 		var plan = ProjectionPlanFactory.ConvertExpressionToPlan(projection);
 		

@@ -7,7 +7,7 @@ public record ConstNode (int ParameterIndex) : INode
 {
 	public Expression BuildExpression (BuildContext context)
 	{
-		return Expression.Constant(context.BuildingParameters[ParameterIndex], typeof(object));
+		return Expression.ArrayIndex(context.Constants, Expression.Constant(ParameterIndex));
 	}
 }
 
@@ -16,6 +16,6 @@ public record GenericConstNode<T> (int ParameterIndex) : INode
 {
 	public Expression BuildExpression (BuildContext context)
 	{
-		return Expression.Constant(context.BuildingParameters[ParameterIndex], typeof(T));
+		return Expression.Convert(Expression.ArrayIndex(context.Constants, Expression.Constant(ParameterIndex)), typeof(T));
 	}
 }

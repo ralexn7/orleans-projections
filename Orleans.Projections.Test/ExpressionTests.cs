@@ -136,9 +136,9 @@ public class ExpressionTests
 		
 		var request = ProjectionPlanFactory.ConvertExpressionToPlan(projection);
 
-		Expression<Func<PersonState, object?[]>> expression = request.Item1.BuildExpression(request.Item2);
+		var projector = request.Item1.BuildLambda();
 		
-		var res = expression.Compile()(state);
+		var res = projector(state, request.Item2.ToArray());
 		
 		Assert.That(res[0], Is.EqualTo("ALICE"));
 		Assert.That(res[1], Is.EqualTo("A"));

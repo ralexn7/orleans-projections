@@ -83,7 +83,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
         
-        var data = await grain.Project(state => new
+        var data = await grain.GetProjection(state => new
         {
             state.Name,
             state.Age,
@@ -113,7 +113,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
         
-        var data = await grain.Project(state => new PersonData
+        var data = await grain.GetProjection(state => new PersonData
         {
             Name = state.Name,
             Age = state.Age,

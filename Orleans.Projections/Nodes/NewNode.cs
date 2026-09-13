@@ -10,4 +10,17 @@ public record NewNode (List<INode> Arguments) : INode
         // todo: consider preserving .ctor parameters
         return Expression.NewArrayInit(typeof(object), Arguments.Select(a => Expression.Convert(a.BuildExpression(context), typeof(object))));
     }
+
+    public virtual bool Equals (NewNode? other) =>
+        other is not null && Arguments.SequenceEqual(other.Arguments);
+
+    public override int GetHashCode ()
+    {
+        var hash = new HashCode();
+        foreach (var argument in Arguments)
+        {
+            hash.Add(argument);
+        }
+        return hash.ToHashCode();
+    }
 }
