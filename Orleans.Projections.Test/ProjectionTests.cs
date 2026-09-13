@@ -38,7 +38,7 @@ public class ProjectionTests
         var request = new ProjectionPlan<PersonState>([
             new PropertyNode(["Name"]),
             new PropertyNode(["Age"]),
-        ]);
+        ], []);
 
         var result = await grain.GetProjection(request, CancellationToken.None);
 
@@ -53,7 +53,7 @@ public class ProjectionTests
         var request = new ProjectionPlan<PersonState>([
             new PropertyNode(["Address", "City"]),
             new PropertyNode(["Address", "Country"]),
-        ]);
+        ], []);
 
         var result = await grain.GetProjection(request, CancellationToken.None);
 
@@ -66,12 +66,12 @@ public class ProjectionTests
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
         var request = new ProjectionPlan<PersonState>([
-            new ConstNode("literal"),
+            new ConstNode(0),
             new PropertyNode(["Name"]),
-            new ConstNode(7),
+            new ConstNode(1),
             new UnaryExpressionNode(new GenericPropertyNode<int>(["Age"]), ExpressionType.Negate),
-            new BinaryExpressionNode(new GenericPropertyNode<int>(["Age"]), new GenericConstNode<int>(5), ExpressionType.Subtract)
-        ]);
+            new BinaryExpressionNode(new GenericPropertyNode<int>(["Age"]), new GenericConstNode<int>(2), ExpressionType.Subtract)
+        ], ["literal", 7, 5]);
 
         var result = await grain.GetProjection(request, CancellationToken.None);
 

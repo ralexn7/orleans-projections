@@ -30,6 +30,7 @@ public class ProjectionPlanFactory
 			throw new ArgumentException("Projection expression body must be either a NewExpression or a MemberInitExpression.", nameof(projectionExpression));
 		}
 
+		List<object?> planParameters = [];
 		foreach (var arg in arguments)
 		{
 			// Ensure that the argument is not a root parameter expression. Cause we do not want to expose the internal grain state as is
@@ -39,13 +40,13 @@ public class ProjectionPlanFactory
 				throw new ArgumentException("Projection expression cannot contain root parameter expressions.", nameof(projectionExpression));
 			}
 			
-			nodes.Add(BuildNode(arg));
+			nodes.Add(BuildNode(arg, planParameters));
 		}
 		
-		return new ProjectionPlan<TState>([..nodes]);
+		return new ProjectionPlan<TState>([..nodes], [..planParameters]);
 	}
 	
-	private static INode BuildNode (Expression expression)
+	private static INode BuildNode (Expression expression, List<object?> planParameters)
 	{
 		switch (expression)
 		{
@@ -62,31 +63,32 @@ public class ProjectionPlanFactory
 				return (typeof(GenericPropertyNode<>).MakeGenericType(memberExpression.Type).GetConstructor([typeof(string[])])!.Invoke([path.ToArray()]) as INode)!;
 
 			case ConstantExpression constantExpression:
-				return (typeof(GenericConstNode<>).MakeGenericType(constantExpression.Type).GetConstructor([constantExpression.Type])!.Invoke([constantExpression.Value]) as INode)!;
+				planParameters.Add(constantExpression.Value);
+				return (typeof(GenericConstNode<>).MakeGenericType(constantExpression.Type).GetConstructor([constantExpression.Type])!.Invoke([planParameters.Count - 1]) as INode)!;
 			
 			case UnaryExpression unaryExpression:
 				return (typeof(GenericUnaryExpressionNode<>).MakeGenericType(unaryExpression.Type).GetConstructor([
-					typeof(INode), typeof(ExpressionType)])!.Invoke([BuildNode(unaryExpression.Operand), unaryExpression.NodeType]) as INode)!;
+					typeof(INode), typeof(ExpressionType)])!.Invoke([BuildNode(unaryExpression.Operand, planParameters), unaryExpression.NodeType]) as INode)!;
 			
 			case BinaryExpression binaryExpression:
-				return new BinaryExpressionNode(BuildNode(binaryExpression.Left), BuildNode(binaryExpression.Right), binaryExpression.NodeType);
+				return new BinaryExpressionNode(BuildNode(binaryExpression.Left, planParameters), BuildNode(binaryExpression.Right, planParameters), binaryExpression.NodeType);
 			
 			case ConditionalExpression conditionalExpression:
-				return new ConditionalNode(BuildNode(conditionalExpression.Test), BuildNode(conditionalExpression.IfTrue), BuildNode(conditionalExpression.IfFalse));
+				return new ConditionalNode(BuildNode(conditionalExpression.Test, planParameters), BuildNode(conditionalExpression.IfTrue, planParameters), BuildNode(conditionalExpression.IfFalse, planParameters));
 			
 			case MethodCallExpression methodCallExpression:
 				var methodDescriptor = MethodDescriptor.Create(methodCallExpression.Method);
-				var parameters = methodCallExpression.Arguments.Select(BuildNode).ToList();
-				return new MethodCallNode(methodCallExpression.Object is null ? null : BuildNode(methodCallExpression.Object), methodDescriptor, parameters);
+				var parameters = methodCallExpression.Arguments.Select(x => BuildNode(x, planParameters)).ToList();
+				return new MethodCallNode(methodCallExpression.Object is null ? null : BuildNode(methodCallExpression.Object, planParameters), methodDescriptor, parameters);
 
 			case NewArrayExpression newArrayExpression:
-				return new NewArrayNode(newArrayExpression.Type.GetElementType()!.AssemblyQualifiedName!, [..newArrayExpression.Expressions.Select(BuildNode)]);
+				return new NewArrayNode(newArrayExpression.Type.GetElementType()!.AssemblyQualifiedName!, [..newArrayExpression.Expressions.Select(x => BuildNode(x, planParameters))]);
 
 			case ListInitExpression listInitExpression:
 				return new ListInitNode
 				(
-					(NewNode) BuildNode(listInitExpression.NewExpression),
-					[..listInitExpression.Initializers.Select(init => new ElementInitNode(MethodDescriptor.Create(init.AddMethod), [..init.Arguments.Select(BuildNode)]))]
+					(NewNode) BuildNode(listInitExpression.NewExpression, planParameters),
+					[..listInitExpression.Initializers.Select(init => new ElementInitNode(MethodDescriptor.Create(init.AddMethod), [..init.Arguments.Select(x => BuildNode(x, planParameters))]))]
 				);
 
 			case MemberInitExpression memberInitExpression:
@@ -98,12 +100,12 @@ public class ProjectionPlanFactory
 				
 				return new MemberInitNode
 				(
-					(NewNode) BuildNode(memberInitExpression.NewExpression),
-					[..memberInitExpression.Bindings.Cast<MemberAssignment>().Select(b => new MemberAssignmentNode(BuildNode(b.Expression)))]
+					(NewNode) BuildNode(memberInitExpression.NewExpression, planParameters),
+					[..memberInitExpression.Bindings.Cast<MemberAssignment>().Select(b => new MemberAssignmentNode(BuildNode(b.Expression, planParameters)))]
 				);
 
 			case NewExpression newExpression:
-				return new NewNode([..newExpression.Arguments.Select(BuildNode)]);
+				return new NewNode([..newExpression.Arguments.Select(x => BuildNode(x, planParameters))]);
 			
 			case DefaultExpression defaultExpression:
 				return (typeof(DefaultNode<>).MakeGenericType(defaultExpression.Type).GetConstructor([])!.Invoke([]) as INode)!;
@@ -112,7 +114,7 @@ public class ProjectionPlanFactory
 				return (typeof(ParameterNode<>).MakeGenericType(parameterExpression.Type).GetConstructor([typeof(string), typeof(string)])!.Invoke(["0", parameterExpression.Name]) as INode)!;
 			
 			case LambdaExpression lambdaExpression:
-				return new LambdaExpressionNode(BuildNode(lambdaExpression.Body),
+				return new LambdaExpressionNode(BuildNode(lambdaExpression.Body, planParameters),
 					lambdaExpression.Parameters.Select((p, i) => typeof(ParameterNode<>).MakeGenericType(p.Type).GetConstructor([typeof(string), typeof(string)])!.Invoke([i.ToString(), p.Name]) as IParameterNode).ToArray());
 
 			default:

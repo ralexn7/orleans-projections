@@ -3,11 +3,11 @@ using System.Linq.Expressions;
 namespace Orleans.Projections.Nodes;
 
 [GenerateSerializer]
-public record ConstNode (object? Value) : INode
+public record ConstNode (int ParameterIndex) : INode
 {
 	public Expression BuildExpression (BuildContext context)
 	{
-		return Expression.Constant(Value, typeof(object));
+		return Expression.Constant(context.BuildingParameters[ParameterIndex], typeof(object));
 	}
 }
 

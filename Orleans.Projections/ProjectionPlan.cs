@@ -4,14 +4,14 @@ using Orleans.Projections.Nodes;
 namespace Orleans.Projections;
 
 [GenerateSerializer]
-public record ProjectionPlan<TState> (INode[] Nodes)
+public record ProjectionPlan<TState> (INode[] Nodes, object?[] PlanParameters)
 {
 	public Expression<Func<TState, object?[]>> BuildExpression ()
 	{
 		List<Expression> accessors = [];
 		var parameter = Expression.Parameter(typeof(TState), "state");
 		
-		var buildContext = new BuildContext(parameter);
+		var buildContext = new BuildContext(parameter, PlanParameters);
 		
 		accessors.AddRange(Nodes.Select(node => node.BuildExpression(buildContext)));
 		
