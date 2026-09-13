@@ -3,9 +3,9 @@ using Orleans.Projections.Nodes;
 
 namespace Orleans.Projections;
 
-public class ProjectionRequestBuilder
+public class ProjectionPlanFactory
 {
-	public static ProjectionPlan<TState> Build<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
+	public static ProjectionPlan<TState> ConvertExpressionToPlan<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
 	{
 		var nodes = new List<INode>();
 		

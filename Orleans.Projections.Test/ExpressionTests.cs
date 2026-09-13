@@ -101,7 +101,7 @@ public class ExpressionTests
 			}
 		};
 		
-		var request = ProjectionRequestBuilder.Build(projection);
+		var request = ProjectionPlanFactory.ConvertExpressionToPlan(projection);
 		
 		Assert.That(request.Nodes.Count, Is.EqualTo(6));
 	}
@@ -134,7 +134,7 @@ public class ExpressionTests
 			},
 		};
 		
-		var request = ProjectionRequestBuilder.Build(projection);
+		var request = ProjectionPlanFactory.ConvertExpressionToPlan(projection);
 
 		Expression<Func<PersonState, object?[]>> expression = request.BuildExpression();
 		

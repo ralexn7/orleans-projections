@@ -5,12 +5,12 @@ namespace Orleans.Projections;
 [GenerateSerializer]
 public record Projection (object?[] Values)
 {
-	public T ToProjection<T> ()
+	public T ConvertToInstance<T> ()
 	{
-		return (T)ToProjection(typeof(T), Values);
+		return (T)ConvertToInstance(typeof(T), Values);
 	}
 	
-	private static object ToProjection (Type type, object?[] values)
+	private static object ConvertToInstance (Type type, object?[] values)
 	{
 		// first try to find a constructor that matches the number of values and their types
 		var ctors = type
@@ -112,6 +112,6 @@ public record Projection (object?[] Values)
 			return array;
 		}
 
-		return ToProjection(targetType, values);
+		return ConvertToInstance(targetType, values);
 	}
 }
