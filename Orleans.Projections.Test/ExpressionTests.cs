@@ -100,9 +100,38 @@ public class ExpressionTests
 			}
 		};
 		
-		var request = ProjectionRequestBuilder.Build<PersonState, object>(projection);
+		var request = ProjectionRequestBuilder.Build(projection);
 		
 		Assert.That(request.Nodes.Count, Is.EqualTo(6));
+	}
+	
+	[Test]
+	public void MethodCall_TwoWayConvert ()
+	{
+		var state = new PersonState(
+			Name: "Alice",
+			Age: 30,
+			Address: new Address("New York", "USA")
+		);
+		
+		Expression<Func<PersonState, object>> projection = state => new
+		{
+			Upper = state.Name.ToUpper(),
+			Initial = state.Name.Substring(0, 1),
+			Location = $"{state.Address.City}, {state.Address.Country}"
+		};
+		
+		var request = ProjectionRequestBuilder.Build(projection);
+		
+		Assert.That(request.Nodes.Count, Is.EqualTo(3));
+
+		Expression<Func<PersonState, object?[]>> expression = ExpressionBuilder.Build<PersonState>(request);
+		
+		var res = expression.Compile()(state);
+		
+		Assert.That(res[0], Is.EqualTo("ALICE"));
+		Assert.That(res[1], Is.EqualTo("A"));
+		Assert.That(res[2], Is.EqualTo("New York, USA"));
 	}
 }
 

@@ -18,6 +18,13 @@ public class ProjectionRequestBuilder
 
 		foreach (var arg in arguments)
 		{
+			// Ensure that the argument is not a root parameter expression. Cause we do not want to expose the internal grain state as is
+			// todo: Maybe it is not worth it. Returning raw state (readonly!) may be useful for some scenarios as Grain Dashboards
+			if (arg is ParameterExpression)
+			{
+				throw new ArgumentException("Projection expression cannot contain root parameter expressions.", nameof(projectionExpression));
+			}
+			
 			nodes.Add(BuildNode(arg));
 		}
 		
@@ -69,6 +76,12 @@ public class ProjectionRequestBuilder
 				);
 
 			case MemberInitExpression memberInitExpression:
+				// todo: consider adding support for MemberListBinding and MemberMemberBinding, but they are less common in projections. For now, we only support MemberAssignment.
+				if (memberInitExpression.Bindings.Any(b => b.BindingType != MemberBindingType.Assignment))
+				{
+					throw new NotSupportedException($"Unsupported member binding type: {memberInitExpression.Bindings.First().BindingType}");
+				}
+				
 				return new MemberInitNode
 				(
 					(NewNode) BuildNode(memberInitExpression.NewExpression),
@@ -77,6 +90,12 @@ public class ProjectionRequestBuilder
 
 			case NewExpression newExpression:
 				return new NewNode(ConstructorDescriptor.Create(newExpression.Constructor!), [..newExpression.Arguments.Select(BuildNode)]);
+			
+			case DefaultExpression defaultExpression:
+				return (typeof(DefaultNode<>).MakeGenericType(defaultExpression.Type).GetConstructor([])!.Invoke([]) as INode)!;
+			
+			case ParameterExpression parameterExpression:
+				return (typeof(ParameterNode<>).MakeGenericType(parameterExpression.Type).GetConstructor([typeof(string)])!.Invoke([parameterExpression.Name]) as INode)!;
 
 			default:
 				throw new NotSupportedException($"Unsupported expression type: {expression.GetType().Name}");
