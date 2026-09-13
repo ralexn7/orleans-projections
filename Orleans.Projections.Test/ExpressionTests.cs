@@ -127,7 +127,7 @@ public class ExpressionTests
 		
 		Assert.That(request.Nodes.Count, Is.EqualTo(4));
 
-		Expression<Func<PersonState, object?[]>> expression = ExpressionBuilder.Build<PersonState>(request);
+		Expression<Func<PersonState, object?[]>> expression = request.BuildExpression();
 		
 		var res = expression.Compile()(state);
 		
