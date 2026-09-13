@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Orleans.Projections.Serialization;
+namespace Orleans.Projections.Nodes;
 
 [GenerateSerializer]
 public record BinaryExpressionNode (INode Left, INode Right, ExpressionType NodeType, MethodDescriptor? Method = null) : INode

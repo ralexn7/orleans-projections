@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Orleans.Projections.Serialization;
+namespace Orleans.Projections.Nodes;
 
 [GenerateSerializer]
 public record NewArrayNode (string ElementType, List<INode> Items) : INode

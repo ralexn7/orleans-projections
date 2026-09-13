@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Orleans.Projections.Serialization;
+namespace Orleans.Projections.Nodes;
 
 [GenerateSerializer]
 public record ElementInitNode (MethodDescriptor AddMethod, List<INode> Arguments);

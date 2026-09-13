@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Orleans.Projections.Serialization;
+namespace Orleans.Projections.Nodes;
 
 [GenerateSerializer]
 public record ConditionalNode (INode Test, INode True, INode False) : INode

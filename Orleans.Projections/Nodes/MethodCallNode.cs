@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Orleans.Projections.Serialization;
+namespace Orleans.Projections.Nodes;
 
 [GenerateSerializer]
 public record MethodCallNode (INode? Instance, MethodDescriptor Method, List<INode> Parameters) : INode

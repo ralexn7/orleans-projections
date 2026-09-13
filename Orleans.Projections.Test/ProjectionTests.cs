@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-using Orleans.Projections.Serialization;
+using Orleans.Projections.Nodes;
 using Orleans.TestingHost;
 
 namespace Orleans.Projections.Test;
@@ -35,12 +35,12 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
-        var request = new ProjectionRequest<PersonState>([
+        var request = new ProjectionPlan<PersonState>([
             new PropertyNode(["Name"]),
             new PropertyNode(["Age"]),
         ]);
 
-        var result = await grain.ProjectAsync(request, CancellationToken.None);
+        var result = await grain.GetProjection(request, CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "Ada", 42 }));
     }
@@ -50,12 +50,12 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
-        var request = new ProjectionRequest<PersonState>([
+        var request = new ProjectionPlan<PersonState>([
             new PropertyNode(["Address", "City"]),
             new PropertyNode(["Address", "Country"]),
         ]);
 
-        var result = await grain.ProjectAsync(request, CancellationToken.None);
+        var result = await grain.GetProjection(request, CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "London", "UK" }));
     }
@@ -65,7 +65,7 @@ public class ProjectionTests
     {
         var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
 
-        var request = new ProjectionRequest<PersonState>([
+        var request = new ProjectionPlan<PersonState>([
             new ConstNode("literal"),
             new PropertyNode(["Name"]),
             new ConstNode(7),
@@ -73,7 +73,7 @@ public class ProjectionTests
             new BinaryExpressionNode(new GenericPropertyNode<int>(["Age"]), new GenericConstNode<int>(5), ExpressionType.Subtract)
         ]);
 
-        var result = await grain.ProjectAsync(request, CancellationToken.None);
+        var result = await grain.GetProjection(request, CancellationToken.None);
 
         Assert.That(result.Values, Is.EqualTo(new object?[] { "literal", "Ada", 7 }));
     }

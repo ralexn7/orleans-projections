@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Orleans.Projections.Serialization;
+namespace Orleans.Projections.Nodes;
 
 [GenerateSerializer]
 public record MethodDescriptor (string DeclaringType, string Name, string[] ParameterTypes, string[] GenericArguments)

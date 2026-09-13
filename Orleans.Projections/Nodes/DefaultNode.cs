@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Orleans.Projections.Serialization;
+namespace Orleans.Projections.Nodes;
 
 // todo: pass type definition as a type name instead of a generic parameter. It will simplify client code by reducing reflection but may increase network payload size
 [GenerateSerializer]

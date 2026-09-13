@@ -1,11 +1,11 @@
 using System.Linq.Expressions;
-using Orleans.Projections.Serialization;
+using Orleans.Projections.Nodes;
 
 namespace Orleans.Projections;
 
 public class ProjectionRequestBuilder
 {
-	public static ProjectionRequest<TState> Build<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
+	public static ProjectionPlan<TState> Build<TState, TProjection> (Expression<Func<TState, TProjection>> projectionExpression)
 	{
 		var nodes = new List<INode>();
 		
@@ -42,7 +42,7 @@ public class ProjectionRequestBuilder
 			nodes.Add(BuildNode(arg));
 		}
 		
-		return new ProjectionRequest<TState>([..nodes]);
+		return new ProjectionPlan<TState>([..nodes]);
 	}
 	
 	private static INode BuildNode (Expression expression)

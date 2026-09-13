@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Orleans.Projections.Serialization;
+namespace Orleans.Projections.Nodes;
 
 public interface IParameterNode : INode
 {
