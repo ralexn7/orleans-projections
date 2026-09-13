@@ -8,6 +8,7 @@ namespace Orleans.Projections;
 public record ProjectionPlan<TState> (INode[] Nodes)
 {
 	// Reflection cache to avoid recompiling the same expression multiple times. Since all constants are independent of projection shape, the key is the ProjectionPlan instance itself
+	// Let's keep it unbounded for now; I do not expect a large number of different projection plans to be used in a single grain.
 	private static readonly ConcurrentDictionary<ProjectionPlan<TState>, Func<TState, object?[], object?[]>> ExpressionCache = new();
 
 	public Func<TState, object?[], object?[]> BuildLambda () =>
