@@ -11,7 +11,8 @@ public record Address (
 public record PersonState (
     [property: Id(0)] string Name,
     [property: Id(1)] int Age,
-    [property: Id(2)] Address Address);
+    [property: Id(2)] Address Address,
+    [property: Id(3)] List<string> Tags);
 
 // --- A concrete projectable grain ---
 
@@ -22,7 +23,7 @@ public interface IPersonGrain : IProjectableGrain<PersonState>, IGrainWithString
 
 public class PersonGrain : Grain, IPersonGrain
 {
-    private PersonState _state = new("<unset>", 0, new Address("<unset>", "<unset>"));
+    private PersonState _state = new("<unset>", 0, new Address("<unset>", "<unset>"), []);
 
     public Task SetStateAsync (PersonState state)
     {

@@ -112,7 +112,8 @@ public class ExpressionTests
 		var state = new PersonState(
 			Name: "Alice",
 			Age: 30,
-			Address: new Address("New York", "USA")
+			Address: new Address("New York", "USA"),
+			[]
 		);
 		
 		Expression<Func<PersonState, object>> projection = state => new

@@ -151,25 +151,25 @@ directly — the expression-based API is a convenience layer on top of that.
 
 The translator (`ProjectionPlanFactory.BuildNode`) currently supports:
 
-| Category            | Examples                                                            |
-|---------------------|---------------------------------------------------------------------|
-| Member access       | `state.Name`, nested `state.Address.City`                           |
-| Constants           | `10`, `"literal"` (extracted into the constants list)               |
-| Binary arithmetic   | `state.Age + 5`, `(state.Age * 2 + 5) % 4`                          |
-| Unary               | negation `-state.Age`, casts `(long) state.Age`, boxing            |
-| Comparisons         | `state.Age > 18`, `state.Age >= 18`                                 |
-| Logical             | `&&`, `\|\|`                                                        |
-| Conditional         | ternary `state.Age >= 18 ? "adult" : "minor"`                       |
-| Null-coalescing     | `state.Name ?? "unknown"`                                           |
-| String operations   | concatenation, interpolation `$"{state.Name} ({state.Age})"`        |
-| Method calls        | static (`int.Max(...)`) and instance (`state.Name.ToUpper()`)       |
-| Indexers            | `state.Name[0]`                                                     |
-| Array / list init   | `new int[] { ... }`, `new List<int> { ... }`                        |
-| Dictionary init     | `new Dictionary<string, int> { { "age", state.Age } }`              |
-| Object construction | `new Address(state.Address.City, "US")`                             |
-| Member init         | `new Coordinate { X = state.Age, Y = state.Age + 1 }`               |
-| Nested projections  | anonymous / constructed objects nested inside the projection        |
-| Enums               | enum-valued results; stored and rehydrated by underlying value      |
+| Category            | Examples                                                       |
+|---------------------|----------------------------------------------------------------|
+| Member access       | `state.Name`, nested `state.Address.City`                      |
+| Constants           | `10`, `"literal"` (extracted into the constants list)          |
+| Binary arithmetic   | `state.Age + 5`, `(state.Age * 2 + 5) % 4`                     |
+| Unary               | negation `-state.Age`, casts `(long) state.Age`, boxing        |
+| Comparisons         | `state.Age > 18`, `state.Age >= 18`                            |
+| Logical             | `&&`, `\|\|`                                                   |
+| Conditional         | ternary `state.Age >= 18 ? "adult" : "minor"`                  |
+| Null-coalescing     | `state.Name ?? "unknown"`                                      |
+| String operations   | concatenation, interpolation `$"{state.Name} ({state.Age})"`   |
+| Method calls        | static (`int.Max(...)`) and instance (`state.Name.ToUpper()`)  |
+| Indexers            | `state.Name[0]`                                                |
+| Array / list init   | `new int[] { ... }`, `new List<int> { ... }`                   |
+| Dictionary init     | `new Dictionary<string, int> { { "age", state.Age } }`         |
+| Object construction | `new Address(state.Address.City, "US")`                        |
+| Member init         | `new Coordinate { X = state.X, Y = state.Y + 10 }`             |
+| Nested projections  | anonymous / constructed objects nested inside the projection   |
+| Enums               | enum-valued results; stored and rehydrated by underlying value |
 
 **Projection targets** rebuilt by `Projection.ConvertToInstance<T>`:
 

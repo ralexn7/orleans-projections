@@ -33,7 +33,7 @@ public class ProjectionTests
     [Test]
     public async Task Projects_TopLevel_Members ()
     {
-        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
 
         var request = new ProjectionPlan<PersonState>([
             new PropertyNode(["Name"]),
@@ -48,7 +48,7 @@ public class ProjectionTests
     [Test]
     public async Task Projects_Nested_Members ()
     {
-        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
 
         var request = new ProjectionPlan<PersonState>([
             new PropertyNode(["Address", "City"]),
@@ -63,7 +63,7 @@ public class ProjectionTests
     [Test]
     public async Task Projects_Constants_And_Members_Together ()
     {
-        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
 
         var request = new ProjectionPlan<PersonState>([
             new ConstNode(0),
@@ -81,7 +81,7 @@ public class ProjectionTests
     [Test]
     public async Task Projects_AnonymousType_Entire_Flow ()
     {
-        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
         
         var data = await grain.Get(state => new
         {
@@ -111,7 +111,7 @@ public class ProjectionTests
     [Test]
     public async Task Projects_ExplicitType_Entire_Flow ()
     {
-        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
         
         var data = await grain.Get(state => new PersonData
         {
@@ -132,7 +132,7 @@ public class ProjectionTests
     [Test]
     public async Task Projects_Scalar_Entire_Flow ()
     {
-        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
         
         var data = await grain.Get(state => state.Age);
         
@@ -142,7 +142,7 @@ public class ProjectionTests
     [Test]
     public async Task Projects_ScalarLambda_Entire_Flow ()
     {
-        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
         
         var data = await grain.Get(state => state.Age + 20);
         
@@ -158,10 +158,38 @@ public class ProjectionTests
     [Test]
     public async Task Projects_ScalarEnum_Entire_Flow ()
     {
-        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK")));
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
         
         var data = await grain.Get(state => state.Age >= 18 ? AgeCategory.Adult : AgeCategory.Child);
         
         Assert.That(data, Is.EqualTo(AgeCategory.Adult));
+    }
+    
+    [Test]
+    public async Task Projects_RawState_InvalidOperationException ()
+    {
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), []));
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await grain.Get(state => state));
+    }
+        
+    [Test]
+    public async Task Projects_LambdaCollection1_Entire_Flow ()
+    {
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), ["tag1", "tag2"]));
+        
+        var data = await grain.Get(state => state.Tags.Select(tag => $"{state.Name}-{tag}").ToList());
+        
+        Assert.That(data, Is.EqualTo(new List<string> { "Ada-tag1", "Ada-tag2" }));
+    }
+    
+    [Test]
+    public async Task Projects_LambdaCollection2_Entire_Flow ()
+    {
+        var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), ["tag1", "tag2"]));
+        
+        var data = await grain.Get(state => state.Tags.Select(tag => tag.Length).ToList());
+        
+        Assert.That(data, Is.EqualTo(new List<int> { 4, 4 }));
     }
 }
