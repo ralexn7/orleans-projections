@@ -164,6 +164,7 @@ The translator (`ProjectionPlanTranslator.BuildNode`) currently supports:
 | Member init         | `new Coordinate { X = state.X, Y = state.Y + 10 }`             |
 | Nested projections  | anonymous / constructed objects nested inside the projection   |
 | Enums               | enum-valued results; stored and rehydrated by underlying value |
+| Collection projections | nested lambdas, e.g. `state.Tags.Select(t => t.Length).ToList()`, including ones that capture the outer state |
 
 **Projection targets** rebuilt by `Projection.Materialize<T>`:
 
@@ -172,10 +173,6 @@ The translator (`ProjectionPlanTranslator.BuildNode`) currently supports:
 - Types with a matching public constructor
 - Types with settable public properties (constructed via parameterless ctor, then assigned)
 - Arrays and nested complex objects
-
-> **Nested lambdas** (e.g. `state.Items.Select(i => i.Name)`) are a work in progress. The supporting
-> infrastructure — `LambdaExpressionNode`, `ParameterNode`, and lambda scopes in `BuildContext` — is
-> in place, but end-to-end collection projections are not fully wired up yet.
 
 ## Architecture
 
@@ -221,5 +218,4 @@ client → plan → grain → rehydration flow (`Orleans.Projections.Test`).
 
 This is an experimental / in-progress project. Several areas are still marked with `todo`s in the
 source, including reflection caching in `Projection`, broader member-binding support
-(`MemberListBinding` / `MemberMemberBinding`), nullability handling, and full collection/lambda
-projections. APIs may change.
+(`MemberListBinding` / `MemberMemberBinding`), and nullability handling. APIs may change.

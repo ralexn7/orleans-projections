@@ -3,11 +3,13 @@ using System.Linq.Expressions;
 namespace Orleans.Projections.Nodes;
 
 [GenerateSerializer]
-public record PropertyNode (string[] Path) : INode
+public record PropertyNode (string[] Path, INode? Base = null) : INode
 {
 	public Expression BuildExpression (BuildContext context)
 	{
-		Expression accessor = context.Root;
+		// When no explicit base is provided, member access is rooted at the state parameter.
+		// A base node lets the member chain hang off another expression (e.g. an inner lambda parameter).
+		Expression accessor = Base?.BuildExpression(context) ?? context.Root;
 		foreach (var memberPath in Path)
 		{
 			accessor = Expression.PropertyOrField(accessor, memberPath);
@@ -17,7 +19,7 @@ public record PropertyNode (string[] Path) : INode
 	}
 
 	public virtual bool Equals (PropertyNode? other) =>
-		other is not null && Path.SequenceEqual(other.Path);
+		other is not null && Path.SequenceEqual(other.Path) && Equals(Base, other.Base);
 
 	public override int GetHashCode ()
 	{
@@ -26,16 +28,18 @@ public record PropertyNode (string[] Path) : INode
 		{
 			hash.Add(segment);
 		}
+		hash.Add(Base);
 		return hash.ToHashCode();
 	}
 }
 
 [GenerateSerializer]
-public record GenericPropertyNode<T> (string[] Path) : INode
+public record GenericPropertyNode<T> (string[] Path, INode? Base = null) : INode
 {
 	public Expression BuildExpression (BuildContext context)
 	{
-		Expression accessor = context.Root;
+		// when no explicit base is provided, member access is rooted at the state parameter.
+		Expression accessor = Base?.BuildExpression(context) ?? context.Root;
 		foreach (var memberPath in Path)
 		{
 			accessor = Expression.PropertyOrField(accessor, memberPath);
@@ -45,7 +49,7 @@ public record GenericPropertyNode<T> (string[] Path) : INode
 	}
 
 	public virtual bool Equals (GenericPropertyNode<T>? other) =>
-		other is not null && Path.SequenceEqual(other.Path);
+		other is not null && Path.SequenceEqual(other.Path) && Equals(Base, other.Base);
 
 	public override int GetHashCode ()
 	{
@@ -55,6 +59,7 @@ public record GenericPropertyNode<T> (string[] Path) : INode
 		{
 			hash.Add(segment);
 		}
+		hash.Add(Base);
 		return hash.ToHashCode();
 	}
 }
