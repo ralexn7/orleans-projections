@@ -6,12 +6,12 @@ namespace Orleans.Projections;
 public record Projection (object?[] Values)
 {
 	// todo: think about nullability
-	public T ConvertToInstance<T> ()
+	public T Materialize<T> ()
 	{
-		return (T)ConvertToInstance(typeof(T), Values);
+		return (T)Materialize(typeof(T), Values);
 	}
 	
-	private static object ConvertToInstance (Type type, object?[] values)
+	private static object Materialize (Type type, object?[] values)
 	{
 		// todo: add reflection cache to avoid repeated reflection calls for the same type
 		
@@ -124,8 +124,7 @@ public record Projection (object?[] Values)
 		if (targetType.IsArray)
 		{
 			var elementType = targetType.GetElementType()
-			                  ?? throw new InvalidOperationException(
-				                  $"Cannot determine element type of {targetType}.");
+			                  ?? throw new InvalidOperationException($"Cannot determine element type of {targetType}.");
 
 			var array = Array.CreateInstance(elementType, values.Length);
 
@@ -138,6 +137,6 @@ public record Projection (object?[] Values)
 			return array;
 		}
 
-		return ConvertToInstance(targetType, values);
+		return Materialize(targetType, values);
 	}
 }

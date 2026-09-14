@@ -101,7 +101,7 @@ public class ExpressionTests
 			}
 		};
 		
-		var request = ProjectionPlanFactory.ConvertExpressionToPlan(projection);
+		var request = ProjectionPlanTranslator.Translate(projection);
 		
 		Assert.That(request.Item1.Nodes.Count, Is.EqualTo(6));
 	}
@@ -135,7 +135,7 @@ public class ExpressionTests
 			},
 		};
 		
-		var request = ProjectionPlanFactory.ConvertExpressionToPlan(projection);
+		var request = ProjectionPlanTranslator.Translate(projection);
 
 		var projector = request.Item1.BuildLambda();
 		

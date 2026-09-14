@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Orleans.Projections.Nodes;
+namespace Orleans.Projections;
 
 public class BuildContext (ParameterExpression root, ParameterExpression constants)
 {

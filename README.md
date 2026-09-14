@@ -14,9 +14,9 @@ var summary = await personGrain.Get(state => new
 {
     state.Name,
     state.Age,
-    Location    = $"{state.Address.City}, {state.Address.Country}",
+    Location = $"{state.Address.City}, {state.Address.Country}",
     AgePlusFive = state.Age + 5,
-    IsAdult     = state.Age >= 18
+    IsAdult = state.Age >= 18
 });
 ```
 
@@ -42,7 +42,7 @@ Client                                            Grain
 ──────                                            ─────
 Expression<Func<TState, TProjection>>
         │
-        │  ProjectionPlanFactory.ConvertExpressionToPlan
+        │  ProjectionPlanTranslator.Translate
         ▼
 (ProjectionPlan<TState>, constants)  ──serialized──▶  IProjectableGrain<TState>.Get(plan, constants)
                                                               │
@@ -53,19 +53,19 @@ Expression<Func<TState, TProjection>>
                                                               │
         Projection { object?[] Values }  ◀──serialized──────  ┘
         │
-        │  Projection.ConvertToInstance<TProjection>()
+        │  Projection.Materialize<TProjection>()
         ▼
    TProjection
 ```
 
-1. **Translate.** `ProjectionPlanFactory` walks the client-side expression tree and turns each
+1. **Translate.** `ProjectionPlanTranslator` walks the client-side expression tree and turns each
    supported node into a serializable `INode`. Literals are pulled out into a separate `constants`
    list so the plan captures only the *shape* of the projection, not the values.
 2. **Ship & evaluate.** The `ProjectionPlan<TState>` and the constants are sent to the grain via
    `IProjectableGrain<TState>.Get`. On the grain, `BuildLambda()` rebuilds and compiles the node tree
    into a `Func<TState, object?[], object?[]>` and runs it against the live state.
 3. **Return & rehydrate.** The grain returns a `Projection` (a flat `object?[]` of values). On the
-   client, `ConvertToInstance<TProjection>` reconstructs the requested type from those values.
+   client, `Materialize<TProjection>` reconstructs the requested type from those values.
 
 ## Getting started
 
@@ -75,15 +75,10 @@ A grain opts in by implementing `IProjectableGrain<TState>` and delegating to th
 
 ```csharp
 [GenerateSerializer]
-public record Address(
-    [property: Id(0)] string City,
-    [property: Id(1)] string Country);
+public record Address(string City, string Country);
 
 [GenerateSerializer]
-public record PersonState(
-    [property: Id(0)] string Name,
-    [property: Id(1)] int Age,
-    [property: Id(2)] Address Address);
+public record PersonState(string Name, int Age, Address Address);
 
 public interface IPersonGrain : IProjectableGrain<PersonState>, IGrainWithStringKey
 {
@@ -122,8 +117,8 @@ using Orleans.Projections;
 var summary = await personGrain.Get(state => new
 {
     state.Name,
-    Location    = $"{state.Address.City}, {state.Address.Country}",
-    IsAdult     = state.Age >= 18
+    Location = $"{state.Address.City}, {state.Address.Country}",
+    IsAdult = state.Age >= 18
 });
 
 // Explicit type (constructor or settable properties)
@@ -140,8 +135,7 @@ int age = await personGrain.Get(state => state.Age);
 int agePlusTwenty = await personGrain.Get(state => state.Age + 20);
 
 // An enum
-AgeCategory category = await personGrain.Get(
-    state => state.Age >= 18 ? AgeCategory.Adult : AgeCategory.Child);
+AgeCategory category = await personGrain.Get(state => state.Age >= 18 ? AgeCategory.Adult : AgeCategory.Child);
 ```
 
 You can also build a `ProjectionPlan<TState>` by hand from `INode`s and call `grain.Get(plan, ...)`
@@ -149,7 +143,7 @@ directly — the expression-based API is a convenience layer on top of that.
 
 ## Supported expressions
 
-The translator (`ProjectionPlanFactory.BuildNode`) currently supports:
+The translator (`ProjectionPlanTranslator.BuildNode`) currently supports:
 
 | Category            | Examples                                                       |
 |---------------------|----------------------------------------------------------------|
@@ -171,7 +165,7 @@ The translator (`ProjectionPlanFactory.BuildNode`) currently supports:
 | Nested projections  | anonymous / constructed objects nested inside the projection   |
 | Enums               | enum-valued results; stored and rehydrated by underlying value |
 
-**Projection targets** rebuilt by `Projection.ConvertToInstance<T>`:
+**Projection targets** rebuilt by `Projection.Materialize<T>`:
 
 - Scalars (primitives, `string`, `decimal`, enums)
 - Anonymous types
@@ -189,11 +183,11 @@ The translator (`ProjectionPlanFactory.BuildNode`) currently supports:
 |-----------------------------------------|-----------------------------------------------------------------------------------------------|
 | `IProjectableGrain<TState>`             | Grain-side contract: `Get(plan, parameters, ct)`.                                             |
 | `ProjectableGrainExtensions.Get<…>`     | Client-side convenience: expression → plan → call → rehydrated result.                        |
-| `ProjectionPlanFactory`                 | Translates a LINQ expression tree into an `INode[]` plan plus an extracted constants list.     |
+| `ProjectionPlanTranslator`              | Translates a LINQ expression tree into an `INode[]` plan plus an extracted constants list.     |
 | `ProjectionPlan<TState>`                | Serializable node tree. `BuildLambda()` compiles it to a delegate and caches by plan identity. |
 | `INode` + `Nodes/*`                     | Serializable representations of expression-tree constructs (member, const, binary, call, …).   |
 | `BuildContext`                          | Carries the root-state and constants parameters (and lambda scopes) during expression building. |
-| `Projection`                            | Result envelope (`object?[] Values`) with `ConvertToInstance<T>` for rehydration.              |
+| `Projection`                            | Result envelope (`object?[] Values`) with `Materialize<T>` for rehydration.              |
 
 ## Design notes
 
