@@ -222,4 +222,29 @@ public class ProjectionTests
 		Assert.That(data.EmptyString, Is.EqualTo(string.Empty));
 		Assert.That(data.EmptyGuid, Is.EqualTo(Guid.Empty));
 	}
+	
+	[Test]
+	public async Task Projects_InnerConstructor_Entire_Flow ()
+	{
+		var grain = await GetPersonAsync(new PersonState("Ada", 42, new Address("London", "UK"), ["tag1", "tag2"]));
+		
+		var data = await grain.Get(state => new
+		{
+			Data = new
+			{
+				state.Age,
+				state.Name,
+				Inner = new
+				{
+					state.Age,
+					state.Name,
+				}
+			}
+		});
+		
+		Assert.That(data.Data.Age, Is.EqualTo(42));
+		Assert.That(data.Data.Name, Is.EqualTo("Ada"));
+		Assert.That(data.Data.Inner.Age, Is.EqualTo(42));
+		Assert.That(data.Data.Inner.Name, Is.EqualTo("Ada"));
+	}
 }
