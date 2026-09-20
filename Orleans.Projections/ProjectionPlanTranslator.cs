@@ -58,9 +58,10 @@ public class ProjectionPlanTranslator
 				// determine the base node for the member access. If the base is a root parameter, we don't need to build a node for it.
 				var baseIsRoot = current is null || (current is ParameterExpression rootParam && rootParameters.Contains(rootParam));
 				var baseNode = baseIsRoot ? null : BuildNode(current!, planParameters, rootParameters);
-
+				bool isStatic = memberExpression.Expression is null;
+				
 				// todo: consider not using reflection here and send type as a string instead.
-				return (typeof(GenericPropertyNode<>).MakeGenericType(memberExpression.Type).GetConstructor([typeof(string[]), typeof(INode)])!.Invoke([path.ToArray(), baseNode]) as INode)!;
+				return (typeof(GenericPropertyNode<>).MakeGenericType(memberExpression.Type).GetConstructor([typeof(string[]), typeof(INode), typeof(bool)])!.Invoke([path.ToArray(), baseNode, isStatic]) as INode)!;
 
 			case ConstantExpression constantExpression:
 				// if it is enum, we need to persist its integer value instead of the enum type itself, because the enum type may not be available on the server.

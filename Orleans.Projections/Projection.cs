@@ -5,6 +5,29 @@ namespace Orleans.Projections;
 [GenerateSerializer]
 public record Projection (object?[] Values)
 {
+	private static readonly HashSet<Type> Primitives = 
+	[
+		typeof(bool),
+		typeof(byte),
+		typeof(sbyte),
+		typeof(short),
+		typeof(ushort),
+		typeof(int),
+		typeof(uint),
+		typeof(long),
+		typeof(ulong),
+		typeof(float),
+		typeof(double),
+		typeof(decimal),
+		typeof(char),
+		typeof(string),
+		typeof(DateTime),
+		typeof(DateTimeOffset),
+		typeof(DateOnly),
+		typeof(TimeSpan),
+		typeof(Guid)
+	];
+	
 	// todo: think about nullability
 	public T Materialize<T> ()
 	{
@@ -16,7 +39,7 @@ public record Projection (object?[] Values)
 		// todo: add reflection cache to avoid repeated reflection calls for the same type
 		
 		// first check if target type is primitive, enum, string or decimal, in which case we expect a single value
-		if (type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal))
+		if (type.IsEnum || Primitives.Contains(type))
 		{
 			if (values.Length != 1)
 			{
